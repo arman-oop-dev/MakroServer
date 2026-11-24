@@ -6,5 +6,10 @@ const router = express.Router();
 
 // seller api's
 router.post("/:sellerID/ads", SellerAuthVerify, sellerController.createAdsPost);
+router.get(
+  "/:sellerID/ads",
+  SellerAuthVerify,
+  sellerController.getAdsPostByUser,
+);
 
 export default router;
