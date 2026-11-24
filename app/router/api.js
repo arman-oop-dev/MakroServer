@@ -1,18 +1,11 @@
 import express from "express";
 import * as adminController from "../controllers/adminControler.js";
+import * as buyerController from "../controllers/buyerController.js";
 import * as sellerController from "../controllers/sellerController.js";
 import AdminAuthVerify from "../middleware/AdminMiddleware.js";
 import SellerAuthVerify from "../middleware/SellerMiddleware.js";
 
 const router = express.Router();
-
-// seller api's
-router.post("/:sellerID/ads", SellerAuthVerify, sellerController.createAdsPost);
-router.get(
-  "/:sellerID/ads",
-  SellerAuthVerify,
-  sellerController.getAdsPostByUser,
-);
 
 // admin api's
 router.get("/ads/:adminID", AdminAuthVerify, adminController.getPendingAds);
@@ -22,5 +15,16 @@ router.patch(
   AdminAuthVerify,
   adminController.updateAdStatus,
 );
+
+// seller api's
+router.post("/:sellerID/ads", SellerAuthVerify, sellerController.createAdsPost);
+router.get(
+  "/:sellerID/ads",
+  SellerAuthVerify,
+  sellerController.getAdsPostByUser,
+);
+
+// buyer api's
+router.get("/ads", buyerController.getAllAds);
 
 export default router;

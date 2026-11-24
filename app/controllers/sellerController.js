@@ -4,7 +4,18 @@ import AdsPost from "../models/adsModel.js";
 
 export const createAdsPost = async (req, res) => {
   try {
-    const { title, description, price, rentType, image } = req.body;
+    const {
+      title,
+      description,
+      category,
+      price,
+      rentType,
+      location,
+      quantity,
+      image,
+      status,
+      terms_condition,
+    } = req.body;
     const sellerID = req.params.sellerID;
     const authSellerID = req.user?.id ?? req.user?.sub;
 
@@ -22,9 +33,13 @@ export const createAdsPost = async (req, res) => {
     const data = await AdsPost.create({
       title,
       description,
+      category,
       price,
       rentType,
+      location,
+      quantity,
       image,
+      status,
       sellerID: authSellerID,
     });
 
@@ -44,9 +59,9 @@ export const createAdsPost = async (req, res) => {
 export const getAdsPostByUser = async (req, res) => {
   try {
     const { sellerID } = req.params;
-    const authSellerID = req.user?.id;
+    const authSellerID = req.user?.id ?? req.user?.sub;
 
-    if (!mongoose.isValidObjectId()) {
+    if (!mongoose.isValidObjectId(sellerID)) {
       return res.status(400).json({
         success: false,
         message: "Invalid seller ID",

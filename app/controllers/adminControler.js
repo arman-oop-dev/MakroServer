@@ -39,24 +39,30 @@ export const getPendingAds = async (req, res) => {
   }
 };
 
-export const updatePendingAds = async (req, res) => {
-  // /adminID/ads/:adsID/status
+export const updateAdStatus = async (req, res) => {
+  // /:adminID/ads/:adsID/status
   try {
-    const adminID = req.params.adminID;
-    const adsID = req.params.adsID;
-
+    const { adminID, adsID } = req.params;
     const authAdminID = req.user?.id ?? req.user?.sub;
+
     if (!mongoose.Types.ObjectId.isValid(adminID)) {
-      return res.status(401).json({
+      return res.status(400).json({
         success: false,
-        message: "Unauthorized",
+        message: "Invalid admin ID",
       });
     }
 
-    if (String(adminID) !== String(authAdminID)) {
-      return res.status(401).json({
+    if (!mongoose.Types.ObjectId.isValid(adsID)) {
+      return res.status(400).json({
         success: false,
-        message: "Unauthorized",
+        message: "Invalid ad ID",
+      });
+    }
+
+    if (!authAdminID || String(adminID) !== String(authAdminID)) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update ads with your own admin account",
       });
     }
 
@@ -74,7 +80,7 @@ export const updatePendingAds = async (req, res) => {
       adsID,
       { $set: { status } },
       {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
       },
     );

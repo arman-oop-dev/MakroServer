@@ -16,6 +16,21 @@ const adsPostSchema = new mongoose.Schema(
       minlength: [20, "description must be at least 20 characters long"],
     },
 
+    category: {
+      type: String,
+      enum: [
+        "construction",
+        "photography",
+        "vehicles",
+        "agriculture",
+        "electronics",
+        "event",
+        "others",
+      ],
+      default: "others",
+      required: true,
+    },
+
     price: {
       type: Number,
       required: true,
@@ -26,6 +41,17 @@ const adsPostSchema = new mongoose.Schema(
       type: String,
       enum: ["hour", "day", "week", "month"],
       default: "day",
+    },
+
+    location: {
+      type: String,
+      required: true,
+    },
+
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
     },
 
     image: {
@@ -40,6 +66,11 @@ const adsPostSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
       index: true,
+    },
+
+    terms_condition: {
+      type: String,
+      required: true,
     },
 
     sellerID: {
