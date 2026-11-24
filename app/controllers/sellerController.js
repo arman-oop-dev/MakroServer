@@ -44,9 +44,9 @@ export const createAdsPost = async (req, res) => {
 export const getAdsPostByUser = async (req, res) => {
   try {
     const { sellerID } = req.params;
-    const authSellerID = req.user?.id ?? req.user?.sub;
+    const authSellerID = req.user?.id;
 
-    if (!mongoose.isValidObjectId(sellerID)) {
+    if (!mongoose.isValidObjectId()) {
       return res.status(400).json({
         success: false,
         message: "Invalid seller ID",
@@ -60,9 +60,11 @@ export const getAdsPostByUser = async (req, res) => {
       });
     }
 
-    const data = await AdsPost.find({ sellerID: authSellerID }).sort({
-      createdAt: -1,
-    });
+    const data = await AdsPost.find({ sellerID: authSellerID })
+      .populate("sellerID", "name email")
+      .sort({
+        createdAt: -1,
+      });
 
     return res.status(200).json({
       success: true,
