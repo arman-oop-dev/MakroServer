@@ -45,7 +45,9 @@ export const getAllAds = async (req, res) => {
     let adsQuery = AdsPost.find({
       status: "approved",
       ...query,
-    }).sort(sort);
+    })
+      .populate("sellerID", "name")
+      .sort(sort);
 
     if (limit) adsQuery = adsQuery.limit(limit);
 
