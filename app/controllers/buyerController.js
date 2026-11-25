@@ -5,7 +5,11 @@ export const getAllAds = async (req, res) => {
     const query = {};
 
     const toValues = (input) => {
-      const raw = Array.isArray(input) ? input : input === undefined ? [] : [input];
+      const raw = Array.isArray(input)
+        ? input
+        : input === undefined
+          ? []
+          : [input];
 
       return raw
         .filter((item) => typeof item === "string" || typeof item === "number")
@@ -38,11 +42,9 @@ export const getAllAds = async (req, res) => {
 
     const sortValue = toValues(req.query.sort)[0];
     const sort =
-      sortValue === "price"
-        ? { price: 1, createdAt: -1 }
-        : { createdAt: -1 };
+      sortValue === "price" ? { price: 1, createdAt: -1 } : { createdAt: -1 };
 
-    let adsQuery = AdsPost.find({
+    let adsQuery = await AdsPost.find({
       status: "approved",
       ...query,
     })
@@ -51,7 +53,7 @@ export const getAllAds = async (req, res) => {
 
     if (limit) adsQuery = adsQuery.limit(limit);
 
-    const data = await adsQuery;
+    const data = adsQuery;
 
     return res.status(200).json({
       success: true,
