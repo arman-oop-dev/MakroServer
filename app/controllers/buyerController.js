@@ -2,14 +2,48 @@ import AdsPost from "../models/adsModel.js";
 
 export const getAllAds = async (req, res) => {
   try {
-    const data = await AdsPost.find({ status: "approved" }).sort({
+    const query = {};
+
+    const toValues = (input) => {
+      const raw = Array.isArray(input) ? input : input === undefined ? [] : [input];
+
+      return raw
+        .filter((item) => typeof item === "string" || typeof item === "number")
+        .map((item) => String(item).trim())
+        .filter(Boolean);
+    };
+
+    const applyMultiFilter = (field, input) => {
+      const values = toValues(input);
+      if (values.length) query[field] = { $in: values };
+    };
+
+    applyMultiFilter("category", req.query.category);
+    applyMultiFilter("rentType", req.query.rentType);
+    applyMultiFilter("city", req.query.city);
+
+    const searches = toValues(req.query.search);
+    if (searches.length) {
+      query.$or = searches.flatMap((search) => [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ]);
+    }
+
+    const data = await AdsPost.find({
+      status: "approved",
+      ...query,
+    }).sort({
       createdAt: -1,
     });
 
     return res.status(200).json({
       success: true,
+      totalAds: data.length,
       data,
-      ...(data.length === 0 && { message: "There is no ads post yet!" }),
+      ...(data.length === 0 && {
+        message: "There are no ads posts yet!",
+      }),
     });
   } catch (error) {
     return res.status(500).json({
