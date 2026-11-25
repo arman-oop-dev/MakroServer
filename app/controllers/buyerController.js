@@ -30,12 +30,26 @@ export const getAllAds = async (req, res) => {
       ]);
     }
 
-    const data = await AdsPost.find({
+    const parsedLimit = Number.parseInt(toValues(req.query.limit)[0] ?? "", 10);
+    const limit =
+      Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, 50)
+        : 0;
+
+    const sortValue = toValues(req.query.sort)[0];
+    const sort =
+      sortValue === "price"
+        ? { price: 1, createdAt: -1 }
+        : { createdAt: -1 };
+
+    let adsQuery = AdsPost.find({
       status: "approved",
       ...query,
-    }).sort({
-      createdAt: -1,
-    });
+    }).sort(sort);
+
+    if (limit) adsQuery = adsQuery.limit(limit);
+
+    const data = await adsQuery;
 
     return res.status(200).json({
       success: true,
