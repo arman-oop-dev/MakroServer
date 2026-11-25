@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 import AdsPost from "../models/adsModel.js";
+import Payment from "../models/paymentModel.js";
+
+const FREE_AD_LIMIT = 2;
+const SELLER_PRO_PRODUCT = "seller_pro";
 
 export const createAdsPost = async (req, res) => {
   try {
@@ -30,6 +34,39 @@ export const createAdsPost = async (req, res) => {
       });
     }
 
+    if (!mongoose.isValidObjectId(authSellerID)) {
+      return res.status(403).json({
+        success: false,
+        message: "Invalid seller account",
+      });
+    }
+
+    const hasPaid = await Payment.exists({
+      userId: String(authSellerID),
+      product: SELLER_PRO_PRODUCT,
+      status: "paid",
+    });
+
+    if (!hasPaid) {
+      const adCount = await AdsPost.countDocuments({
+        sellerID: authSellerID,
+      });
+
+      if (adCount >= FREE_AD_LIMIT) {
+        return res.status(402).json({
+          success: false,
+          code: "PAYMENT_REQUIRED",
+          message:
+            "You have used your 2 free ads. Complete the one-time payment to keep posting.",
+          data: {
+            adCount,
+            freeAdLimit: FREE_AD_LIMIT,
+            hasPaid: false,
+          },
+        });
+      }
+    }
+
     const data = await AdsPost.create({
       title,
       description,
@@ -40,6 +77,7 @@ export const createAdsPost = async (req, res) => {
       quantity,
       image,
       status,
+      terms_condition: terms_condition || "Standard rental terms apply.",
       sellerID: authSellerID,
     });
 
