@@ -130,3 +130,78 @@ export const getAdsPostByUser = async (req, res) => {
     });
   }
 };
+
+export const updateAds = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const authSellerID = req.user?.id ?? req.user?.sub;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ad ID",
+      });
+    }
+
+    if (!authSellerID || !mongoose.isValidObjectId(authSellerID)) {
+      return res.status(403).json({
+        success: false,
+        message: "Invalid seller account",
+      });
+    }
+
+    // Status is controlled by admins, so it is intentionally not editable here.
+    const editableFields = [
+      "title",
+      "description",
+      "category",
+      "price",
+      "rentType",
+      "location",
+      "quantity",
+      "image",
+      "terms_condition",
+    ];
+
+    const updates = {};
+    for (const field of editableFields) {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        updates[field] = req.body[field];
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid fields to update",
+      });
+    }
+
+    const data = await AdsPost.findOneAndUpdate(
+      { _id: id, sellerID: authSellerID },
+      { $set: updates },
+      { new: true, runValidators: true },
+    );
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "Ad not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Updated Successfully",
+      data,
+    });
+  } catch (error) {
+    const statusCode = error.name === "ValidationError" ? 400 : 500;
+
+    return res.status(statusCode).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+

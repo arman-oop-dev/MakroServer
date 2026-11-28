@@ -24,7 +24,11 @@ router.get(
   sellerController.getAdsPostByUser,
 );
 
+router.patch("/updateAds/:id", SellerAuthVerify, sellerController.updateAds)
+
 // buyer api's
 router.get("/ads", buyerController.getAllAds);
 
+
 export default router;
+
